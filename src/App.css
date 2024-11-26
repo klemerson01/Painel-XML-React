@@ -1,0 +1,32 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+#barraInicial {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#barraInicial h2 {
+  margin: 0;
+  margin: 0 auto;
+  font-size: 40px;
+}
+
+#barraInicial button {
+  margin-left: 0;
+}
+#barraInicial button:hover {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 7px 0px;
+  transform: scale(1.1);
+}
+
+.cards {
+display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 10px;
+}
