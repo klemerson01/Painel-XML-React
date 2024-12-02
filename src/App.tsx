@@ -4,25 +4,34 @@ import Modal from "./components/create-modal/modal";
 import Card from "./components/card/card";
 import { useState, useEffect } from "react";
 import { useClientes } from "./components/hooks/useClientes";
+import { IClienteData } from "./components/interfaces/ClientesData";
 
 function App() {
   const { data: clientes } = useClientes();
 
   const [modalAberto, setModalAberto] = useState(false);
+  const [clienteSelecionado, setClienteSelecionado] = useState<IClienteData | null>(null);
+  
+  const abrirModal = (cliente: IClienteData) => {
+    setClienteSelecionado(cliente);
+    setModalAberto(true);
+  };
 
-  const abrirModal = () => setModalAberto(true);
-  const fecharModal = () => setModalAberto(false);
+  const fecharModal = () => {
+    setModalAberto(false);
+    setClienteSelecionado(null); // Limpar o cliente selecionado ao fechar o modal
+  };
 
   return (
     <>
-    {console.log(clientes)}
+      {console.log(clientes)}
       <div id="barraInicial">
         <h2>Painel XML</h2>
-        <Button variant="contained" onClick={abrirModal}>
+        <Button variant="contained" onClick={() => abrirModal({} as IClienteData)}>
           Novo Cliente
         </Button>
-        {modalAberto && <Modal closeModal={fecharModal} />}
-      </div>
+        
+        </div>
       <div className="cards">
         {clientes?.map((i) => {
           return (
@@ -31,48 +40,14 @@ function App() {
               nome={i.razao}
               cnpj={i.cnpj}
               contador={i.tiposArquivo[0].nome}
-              click={abrirModal}
+              click={() => abrirModal(i)}
             />
           );
         })}
-        
-        {/* <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          />
-          <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          />
-          <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          />
-          <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          />
-          <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          />
-          <Card
-            nome="Computek"
-            cnpj="00.657.034/0001-53"
-            contador="Paula"
-            click={abrirModal}
-          /> */}
       </div>
+      {modalAberto && clienteSelecionado && (
+        <Modal closeModal={fecharModal} cliente={clienteSelecionado} />
+      )}
     </>
   );
 }
