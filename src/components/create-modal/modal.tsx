@@ -8,35 +8,76 @@ import {
   Button,
 } from "@mui/material";
 import { Checkbox } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { IClienteData } from "../interfaces/ClientesData";
+import { EditarCliente, CriarCliente } from "../hooks/useClientes";
+import constantes from "../../utils/constantes";
 
 interface ModalProps {
   closeModal(): void;
   cliente: IClienteData;
+  cbAtualizarListagemClientes(clienteAlterado: IClienteData): void;
 }
 
-function Modal({ closeModal, cliente }: ModalProps) {
+function Modal({
+  closeModal,
+  cliente,
+  cbAtualizarListagemClientes,
+}: ModalProps) {
+  const [msgErro, setMsgErro] = useState(constantes.STRING_VAZIA);
   const [formData, setFormData] = useState<IClienteData>(() => {
-    if (cliente) {
-      return cliente; // Preenche com os dados do cliente se existir
-    }
-    return {
-      id: '',
-      razao: '',
-      fantasia: '',
-      cnpj: '',
-      software: '',
-      telefone: '',
-      email: '',
-      contador: { nome: '', email: '', telefone: '' },
-      tiposArquivo: [{ nome: '' }],
-    }; // Caso contrário, inicializa com um objeto vazio
+    return cliente;
   });
+
+  const SalvarAlteracoes = async () => {
+    if (!formData.id) {
+      try {
+        const novoCliente = await CriarCliente(formData);
+        if (novoCliente.status == constantes.HTTP_RESPONSE_CREATE) {
+          cbAtualizarListagemClientes(novoCliente.data);
+          closeModal();
+        }
+      } catch (error) {
+        setMsgErro("Erro no cadastro...");
+      }
+    } else {
+      try {
+        const clienteAlterado = await EditarCliente(formData);
+        if (clienteAlterado.status == constantes.HTTP_RESPONSE_OK) {
+          cbAtualizarListagemClientes(clienteAlterado.data);
+          closeModal();
+        }
+      } catch (error) {
+        setMsgErro("Erro no cadastro...");
+      }
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleChangeContabil = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      contador: {
+        ...formData.contador,
+        [name]: value,
+      },
+    });
+  };
+
+  const handleTipoArquivo = (e: any, checked: boolean) => {
+    const { name } = e.target;
+    setFormData({
+      ...formData,
+      tiposArquivo: {
+        ...formData.tiposArquivo,
+        [name]: checked,
+      },
+    });
   };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -75,6 +116,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="Razão Social"
+                  name="razao"
                   fullWidth
                   margin="normal"
                   value={formData.razao}
@@ -84,6 +126,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="Fantasia"
+                  name="fantasia"
                   fullWidth
                   margin="normal"
                   value={formData.fantasia}
@@ -93,6 +136,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="CNPJ"
+                  name="cnpj"
                   fullWidth
                   margin="normal"
                   value={formData.cnpj}
@@ -101,6 +145,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="Software"
+                  name="software"
                   fullWidth
                   margin="normal"
                   value={formData.software}
@@ -109,6 +154,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="Telefone"
+                  name="telefone"
                   fullWidth
                   margin="normal"
                   value={formData.telefone}
@@ -117,6 +163,7 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 <TextField
                   className="input-modal"
                   label="E-mail"
+                  name="email"
                   fullWidth
                   margin="normal"
                   value={formData.email}
@@ -149,28 +196,31 @@ function Modal({ closeModal, cliente }: ModalProps) {
                   <TextField
                     className="input-modal"
                     label="Contabilidade"
+                    name="nome"
                     fullWidth
                     margin="normal"
                     value={formData.contador.nome}
-                    onChange={handleChange}
+                    onChange={handleChangeContabil}
                   />
                   <TextField
                     className="input-modal"
                     label="Telefone"
+                    name="telefone"
                     fullWidth
                     margin="normal"
                     value={formData.contador.telefone}
-                    onChange={handleChange}
+                    onChange={handleChangeContabil}
                   />
 
                   <TextField
                     sx={{ flex: "1 1 100%" }}
                     className="input-modal"
                     label="E-mail"
+                    name="email"
                     fullWidth
                     margin="normal"
                     value={formData.contador.email}
-                    onChange={handleChange}
+                    onChange={handleChangeContabil}
                   />
                 </Box>
               </Box>
@@ -200,23 +250,35 @@ function Modal({ closeModal, cliente }: ModalProps) {
                 >
                   <FormControlLabel
                     control={<Checkbox />}
-                    value={"XML"}
+                    value={formData.tiposArquivo.xml}
+                    name="xml"
+                    checked={formData.tiposArquivo.xml && true}
                     label="XML"
+                    onChange={handleTipoArquivo}
                   />
                   <FormControlLabel
                     control={<Checkbox />}
-                    value={"SPED-FISCAL"}
+                    name="sped"
+                    checked={formData.tiposArquivo.sped && true}
+                    value={formData.tiposArquivo.sped}
                     label="SPED-Fiscal"
+                    onChange={handleTipoArquivo}
                   />
                   <FormControlLabel
                     control={<Checkbox />}
-                    value={"SPED-CONT"}
+                    name="spedFederal"
+                    checked={formData.tiposArquivo.spedFederal && true}
+                    value={formData.tiposArquivo.spedFederal}
                     label="SPED-CONTRIBUIÇÕES"
+                    onChange={handleTipoArquivo}
                   />
                   <FormControlLabel
                     control={<Checkbox />}
-                    value={"CORRECAO"}
+                    name="correcao"
+                    checked={formData.tiposArquivo.correcao && true}
+                    value={formData.tiposArquivo.correcao}
                     label="CORREÇÃO-SPED"
+                    onChange={handleTipoArquivo}
                   />
                 </FormGroup>
               </Box>
@@ -228,13 +290,17 @@ function Modal({ closeModal, cliente }: ModalProps) {
                   width: "100%",
                 }}
               >
-                <Button onClick={closeModal} variant="contained">
-                  {" "}
-                  Salvar{" "}
+                <Button
+                  onClick={SalvarAlteracoes}
+                  variant="contained"
+                  size="large"
+                >
+                  Salvar
                 </Button>
               </Box>
             </Box>
           </form>
+          {msgErro}
         </div>
       </div>
     </div>

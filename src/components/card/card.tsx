@@ -3,16 +3,16 @@ import "./card.css";
 interface CardProps {
   nome: string;
   cnpj: string;
-  contador: string;
+  software: string;
   click(): void;
 }
 
-function Card({ nome, cnpj, contador, click }: CardProps) {
+function Card({ nome, cnpj, software, click }: CardProps) {
   return (
     <div className="card" id="card" onClick={click}>
       <h2>{nome}</h2>
       <h3>{cnpj}</h3>
-      <h3>{contador}</h3>
+      <h3>{software}</h3>
     </div>
   );
 }

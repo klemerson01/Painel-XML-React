@@ -1,5 +1,5 @@
 export interface IClienteData {
-  id: string;
+  id?: string;
   razao: string;
   fantasia: string;
   cnpj: string;
@@ -11,9 +11,30 @@ export interface IClienteData {
     email: string;
     telefone: string;
   };
-  tiposArquivo: [
-    {
-      nome: string;
-    }
-  ];
+  tiposArquivo: {
+    sped: Boolean;
+    spedFederal: Boolean;
+    xml: Boolean;
+    correcao: Boolean;
+  };
 }
+
+export const InitCliente: IClienteData = {
+  cnpj: "",
+  razao: "",
+  fantasia: "",
+  software: "",
+  email: "",
+  telefone: "",
+  contador: {
+    nome: "",
+    email: "",
+    telefone: "",
+  },
+  tiposArquivo: {
+    sped: false,
+    spedFederal: false,
+    xml: false,
+    correcao: false,
+  },
+};
