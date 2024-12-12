@@ -67,7 +67,7 @@ function App() {
           return (
             <Card
               key={cliente.id}
-              nome={cliente.razao}
+              nome={cliente.fantasia}
               cnpj={cliente.cnpj}
               software={cliente.software}
               click={() => abrirModal(cliente)}

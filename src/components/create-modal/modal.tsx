@@ -11,7 +11,7 @@ import { Checkbox } from "@mui/material";
 import { useState } from "react";
 import { IClienteData } from "../interfaces/ClientesData";
 import { EditarCliente, CriarCliente } from "../hooks/useClientes";
-import constantes from "../../utils/constantes";
+import constantes, { cnpjMask, telefoneMask } from "../../utils/constantes";
 
 interface ModalProps {
   closeModal(): void;
@@ -55,18 +55,42 @@ function Modal({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    if (name == "telefone" || name == "cnpj") {
+      const limparMascara = value.replace(/\D/g, "");
+
+      setFormData({
+        ...formData,
+        [name]: limparMascara,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleChangeContabil = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      contador: {
-        ...formData.contador,
-        [name]: value,
-      },
-    });
+    if (name == "telefone") {
+      const limparMascara = value.replace(/\D/g, "");
+      setFormData({
+        ...formData,
+        contador: {
+          ...formData.contador,
+          [name]: limparMascara,
+        },
+      });
+    } else {
+      setFormData({
+        ...formData,
+        contador: {
+          ...formData.contador,
+          [name]: value,
+        },
+      });
+    }
   };
 
   const handleTipoArquivo = (e: any, checked: boolean) => {
@@ -139,9 +163,10 @@ function Modal({
                   name="cnpj"
                   fullWidth
                   margin="normal"
-                  value={formData.cnpj}
+                  value={cnpjMask(formData.cnpj)}
                   onChange={handleChange}
                 />
+
                 <TextField
                   className="input-modal"
                   label="Software"
@@ -151,15 +176,17 @@ function Modal({
                   value={formData.software}
                   onChange={handleChange}
                 />
+
                 <TextField
                   className="input-modal"
                   label="Telefone"
                   name="telefone"
                   fullWidth
                   margin="normal"
-                  value={formData.telefone}
+                  value={telefoneMask(formData.telefone)}
                   onChange={handleChange}
                 />
+
                 <TextField
                   className="input-modal"
                   label="E-mail"
@@ -202,16 +229,16 @@ function Modal({
                     value={formData.contador.nome}
                     onChange={handleChangeContabil}
                   />
+
                   <TextField
                     className="input-modal"
                     label="Telefone"
                     name="telefone"
                     fullWidth
                     margin="normal"
-                    value={formData.contador.telefone}
+                    value={telefoneMask(formData.contador.telefone)}
                     onChange={handleChangeContabil}
                   />
-
                   <TextField
                     sx={{ flex: "1 1 100%" }}
                     className="input-modal"
@@ -261,7 +288,7 @@ function Modal({
                     name="sped"
                     checked={formData.tiposArquivo.sped && true}
                     value={formData.tiposArquivo.sped}
-                    label="SPED-Fiscal"
+                    label="SPED-FISCAL"
                     onChange={handleTipoArquivo}
                   />
                   <FormControlLabel

@@ -1,6 +1,6 @@
 .card {
-    background-color: #f0f0f0;
-display: flex;
+  background-color: #f0f0f0;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -13,12 +13,15 @@ display: flex;
   max-width: calc(25% - 16px);
 }
 .card:hover {
-    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 7px 0px;
-    transform: scale(1.05); 
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 7px 0px;
+  transform: scale(1.05);
 }
 
 .card h2 {
   margin: 0;
+  white-space: nowrap;
+  max-width: 250px;
+  overflow: hidden;
 }
 
 .card h3 {
