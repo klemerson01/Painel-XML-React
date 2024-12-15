@@ -4,27 +4,36 @@ import Modal from "./components/create-modal/modal";
 import Card from "./components/card/card";
 import { useState, useEffect } from "react";
 import {
+  fetchFiltroClientes,
   fetchTodosClientes,
-  useClientes,
 } from "./components/hooks/useClientes";
 import {
   IClienteData,
   InitCliente,
 } from "./components/interfaces/ClientesData";
+import { EnumFiltro } from "./utils/constantes";
+import SelectMonth from "./components/selectMonth/SelectMonth";
+import SelectYear from "./components/selectYear/SelectYear";
+import SelectFilter from "./components/selectFilter/SelectFilter";
 
 function App() {
-  // Não entendi como funciona esse método
-  //const { data: clientes } = useClientes();
+  // Bloco de States
   const [data, setData] = useState([] as IClienteData[]);
   const [modalAberto, setModalAberto] = useState(false);
   const [clienteSelecionado, setClienteSelecionado] =
     useState<IClienteData | null>(null);
+  const [mes, setMes] = useState("Janeiro");
+  const [ano, setAno] = useState("2024");
+  const [filtro, setFiltro] = useState(EnumFiltro.TODOS.toString());
+  // Fim dos States
 
+  // Bloco de Effects
   useEffect(() => {
     fetchTodosClientes().then((retorno) => {
       setData(retorno.data);
     });
   }, []);
+  // Fim dos Effects
 
   const abrirModal = (cliente: IClienteData) => {
     setClienteSelecionado(cliente);
@@ -33,25 +42,37 @@ function App() {
 
   const fecharModal = () => {
     setModalAberto(false);
-    setClienteSelecionado(null); // Limpar o cliente selecionado ao fechar o modal
+    setClienteSelecionado(null);
   };
 
   const atualizarDados = (cliente: IClienteData) => {
-    console.log("Atualizando...");
     setData((prevClientes) => {
       const existe = prevClientes.find((item) => item.id === cliente.id);
       if (existe) {
-        console.log("Atualizando existente...");
         // Atualiza o cliente existente
         return prevClientes.map((item) =>
           item.id === cliente.id ? cliente : item
         );
       } else {
-        console.log("Atualizando novo...");
         // Adiciona um novo cliente
         return [...prevClientes, cliente];
       }
     });
+  };
+
+  const filtrarPorData = () => {
+    if (filtro == EnumFiltro.TODOS) {
+      fetchTodosClientes().then((retorno) => {
+        setData(retorno.data);
+      });
+      return;
+    }
+
+    fetchFiltroClientes(Number(ano), mes, filtro == EnumFiltro.GERADOS).then(
+      (res) => {
+        setData(res.data);
+      }
+    );
   };
 
   return (
@@ -62,6 +83,16 @@ function App() {
           Novo Cliente
         </Button>
       </div>
+      <div>
+        {/* Filtros */}
+        <SelectMonth value={mes} setValue={setMes} />
+        <SelectYear value={ano} setValue={setAno} />
+        <SelectFilter value={filtro} setValue={setFiltro} />
+        <Button variant="contained" onClick={filtrarPorData}>
+          filtrar
+        </Button>
+      </div>
+      <div>{`Exibindo ${data.length} registros`}</div>
       <div className="cards">
         {data?.map((cliente) => {
           return (
