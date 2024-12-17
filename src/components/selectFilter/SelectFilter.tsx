@@ -18,7 +18,7 @@ const SelectFilter = ({ value, setValue, minWidth }: ISelectFilter) => {
     setValue(event.target.value);
   };
   return (
-    <FormControl sx={{ m: 1, minWidth: 300 }}>
+    <FormControl sx={{ minWidth: 300 }}>
       <InputLabel id="demo-simple-select-helper-label">Filtro</InputLabel>
       <Select
         labelId="demo-simple-select-label"

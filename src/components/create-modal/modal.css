@@ -14,8 +14,8 @@
 .modal-fundo .modal-body {
   background-color: #fffcfc;
   padding: 4px;
-  height: 85%;
-  width: 70%;
+  height: 90%;
+  width: 80%;
   border-radius: 15px;
   display: flex;
   align-items: center;
@@ -36,5 +36,16 @@
 
 .input-modal {
   flex: 0 1 calc(50% - 10px);
+}
+
+.upload {
+  /* background-color: red; */
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+  gap: 90px;
+  margin: 0;
+  padding: 0;
+  
 }
 

@@ -8,10 +8,14 @@ import {
   Button,
 } from "@mui/material";
 import { Checkbox } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IClienteData } from "../interfaces/ClientesData";
 import { EditarCliente, CriarCliente } from "../hooks/useClientes";
 import constantes, { cnpjMask, telefoneMask } from "../../utils/constantes";
+import SelectMonth from "../selectMonth/SelectMonth";
+import SelectYear from "../selectYear/SelectYear";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import SendIcon from "@mui/icons-material/Send";
 
 interface ModalProps {
   closeModal(): void;
@@ -28,6 +32,15 @@ function Modal({
   const [formData, setFormData] = useState<IClienteData>(() => {
     return cliente;
   });
+  const [cnpjDisabled, setCnpjDisabled] = useState(false);
+  const [mes, setMes] = useState("Janeiro");
+  const [ano, setAno] = useState("2024");
+
+  useEffect(() => {
+    if (formData.id) {
+      setCnpjDisabled(true);
+    }
+  }, []);
 
   const SalvarAlteracoes = async () => {
     if (!formData.id) {
@@ -35,6 +48,7 @@ function Modal({
         const novoCliente = await CriarCliente(formData);
         if (novoCliente.status == constantes.HTTP_RESPONSE_CREATE) {
           cbAtualizarListagemClientes(novoCliente.data);
+
           closeModal();
         }
       } catch (error) {
@@ -45,6 +59,7 @@ function Modal({
         const clienteAlterado = await EditarCliente(formData);
         if (clienteAlterado.status == constantes.HTTP_RESPONSE_OK) {
           cbAtualizarListagemClientes(clienteAlterado.data);
+
           closeModal();
         }
       } catch (error) {
@@ -110,6 +125,12 @@ function Modal({
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Verifica se há um arquivo selecionado
+    if (file) {
+      console.log("Arquivo selecionado:", file.name);
+    }
+  };
   return (
     <div className="modal-fundo" onClick={handleOverlayClick}>
       <div className="modal-body">
@@ -165,6 +186,7 @@ function Modal({
                   margin="normal"
                   value={cnpjMask(formData.cnpj)}
                   onChange={handleChange}
+                  disabled={cnpjDisabled}
                 />
 
                 <TextField
@@ -264,7 +286,7 @@ function Modal({
                 }}
               >
                 <Typography variant="h6" gutterBottom>
-                  Arquivos
+                  Arquivos que serão gerados:
                 </Typography>
 
                 <FormGroup
@@ -309,6 +331,58 @@ function Modal({
                   />
                 </FormGroup>
               </Box>
+              <Box
+                sx={{
+                  marginTop: 2,
+                  padding: 2,
+                  border: "1px solid #ddd",
+                  borderRadius: 2,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  width: "100%",
+                  flexDirection: "column",
+                }}
+              >
+                
+                  <Typography variant="h6" gutterBottom>
+                    Upload
+                  </Typography>
+                
+                <div className="upload">
+                  <SelectMonth  value={mes} setValue={setMes} />
+                  <SelectYear value={ano} setValue={setAno} />
+
+                  <input
+                    type="file"
+                    accept=".rar,.zip"
+                    style={{ display: "none" }}
+                    id="upload-button"
+                    onChange={handleFileChange}
+                  />
+                  <label htmlFor="upload-button">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      color="info"
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Upload
+                    </Button>
+                  </label>
+                </div>
+
+                <div className="buttonEnviar">
+                  <Button
+                    variant="contained"
+                    color="success"
+                    endIcon={<SendIcon />}
+                  >
+                    Enviar
+                  </Button>
+                </div>
+              </Box>
+
               <Box
                 sx={{
                   marginTop: 1,

@@ -77,35 +77,54 @@ function App() {
 
   return (
     <>
-      <div id="barraInicial">
-        <h2>Painel XML</h2>
-        <Button variant="contained" onClick={() => abrirModal(InitCliente)}>
-          Novo Cliente
-        </Button>
+      <div className="body">
+        <div className="titulo">
+          <h2 className="painel">Painel XML</h2>
+        
+        </div>
+
+        <div className="columns">
+          <div className="menu">
+            <div className="buttonNovoCliente">
+              <Button
+                variant="contained"
+                onClick={() => abrirModal(InitCliente)}
+              >
+                Novo Cliente
+              </Button>
+            </div>
+            {/* Filtros */}
+            <div className="filtros">
+            <SelectMonth value={mes} setValue={setMes} />
+            <SelectYear value={ano} setValue={setAno} />
+            <SelectFilter value={filtro} setValue={setFiltro} />
+            </div>
+            <div className="buttonFiltrar">
+            <Button variant="contained" onClick={filtrarPorData}>
+              filtrar
+            </Button>
+            </div>
+              <div className="resultados">{`Exibindo ${data.length} registros`} </div>
+          </div>
+
+          <div className="bodyCards">
+            <div className="cards">
+              {data?.map((cliente) => {
+                return (
+                  <Card
+                    key={cliente.id}
+                    nome={cliente.fantasia}
+                    cnpj={cliente.cnpj}
+                    software={cliente.software}
+                    click={() => abrirModal(cliente)}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        {/* Filtros */}
-        <SelectMonth value={mes} setValue={setMes} />
-        <SelectYear value={ano} setValue={setAno} />
-        <SelectFilter value={filtro} setValue={setFiltro} />
-        <Button variant="contained" onClick={filtrarPorData}>
-          filtrar
-        </Button>
-      </div>
-      <div>{`Exibindo ${data.length} registros`}</div>
-      <div className="cards">
-        {data?.map((cliente) => {
-          return (
-            <Card
-              key={cliente.id}
-              nome={cliente.fantasia}
-              cnpj={cliente.cnpj}
-              software={cliente.software}
-              click={() => abrirModal(cliente)}
-            />
-          );
-        })}
-      </div>
+
       {modalAberto && clienteSelecionado && (
         <Modal
           closeModal={fecharModal}

@@ -1,15 +1,16 @@
 .card {
-  background-color: #f0f0f0;
+  background-color: #ffffffce;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 250px;
+  width: 300px;
   border-radius: 8px;
   padding: 0;
   height: 200px;
   cursor: pointer;
   flex: 1 1 calc(25% - 16px);
+  /* flex-wrap: wrap; */
   max-width: calc(25% - 16px);
 }
 .card:hover {
@@ -18,13 +19,17 @@
 }
 
 .card h2 {
-  margin: 0;
-  white-space: nowrap;
-  max-width: 250px;
-  overflow: hidden;
+   margin: 0;
+   /* background-color: red; */
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   max-width:  calc(100% - 10px);;
+   color: #1c94ab;
 }
 
 .card h3 {
-  margin-top: 2;
+  /* margin-top: 2; */
   margin-bottom: 0;
+  color: #01080e;
 }

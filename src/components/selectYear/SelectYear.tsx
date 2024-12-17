@@ -17,7 +17,7 @@ const SelectYear = ({ value, setValue, minWidth }: ISelectYear) => {
     setValue(event.target.value);
   };
   return (
-    <FormControl sx={{ m: 1, minWidth: 300 }}>
+    <FormControl sx={{  minWidth: 300 }}>
       <InputLabel id="demo-simple-select-helper-label">Ano</InputLabel>
       <Select
         labelId="demo-simple-select-label"
