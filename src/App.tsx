@@ -11,10 +11,24 @@ import {
   IClienteData,
   InitCliente,
 } from "./components/interfaces/ClientesData";
-import { EnumFiltro } from "./utils/constantes";
+import { EnumFiltro, RetornarDescricaoMes } from "./utils/constantes";
 import SelectMonth from "./components/selectMonth/SelectMonth";
 import SelectYear from "./components/selectYear/SelectYear";
 import SelectFilter from "./components/selectFilter/SelectFilter";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, TypeOptions, toast } from "react-toastify";
+
+export const notify = (msg: string, tipo: TypeOptions) => {
+  toast.info(msg, {
+    type: tipo,
+    position: "top-right",
+    autoClose: 5000, // Fecha automaticamente após 5 segundos
+    hideProgressBar: false, // Mostra a barra de progresso
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+};
 
 function App() {
   // Bloco de States
@@ -32,6 +46,9 @@ function App() {
     fetchTodosClientes().then((retorno) => {
       setData(retorno.data);
     });
+    const now = new Date();
+    setAno(now.getFullYear().toString());
+    setMes(RetornarDescricaoMes(now.getMonth()));
   }, []);
   // Fim dos Effects
 
@@ -80,7 +97,6 @@ function App() {
       <div className="body">
         <div className="titulo">
           <h2 className="painel">Painel XML</h2>
-        
         </div>
 
         <div className="columns">
@@ -95,16 +111,18 @@ function App() {
             </div>
             {/* Filtros */}
             <div className="filtros">
-            <SelectMonth value={mes} setValue={setMes} />
-            <SelectYear value={ano} setValue={setAno} />
-            <SelectFilter value={filtro} setValue={setFiltro} />
+              <SelectMonth value={mes} setValue={setMes} />
+              <SelectYear value={ano} setValue={setAno} />
+              <SelectFilter value={filtro} setValue={setFiltro} />
             </div>
             <div className="buttonFiltrar">
-            <Button variant="contained" onClick={filtrarPorData}>
-              filtrar
-            </Button>
+              <Button variant="contained" onClick={filtrarPorData}>
+                filtrar
+              </Button>
             </div>
-              <div className="resultados">{`Exibindo ${data.length} registros`} </div>
+            <div className="resultados">
+              {`Exibindo ${data.length} registros`}{" "}
+            </div>
           </div>
 
           <div className="bodyCards">
@@ -132,6 +150,7 @@ function App() {
           cbAtualizarListagemClientes={atualizarDados}
         />
       )}
+      <ToastContainer />
     </>
   );
 }

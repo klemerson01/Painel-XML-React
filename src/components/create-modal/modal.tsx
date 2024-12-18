@@ -10,12 +10,23 @@ import {
 import { Checkbox } from "@mui/material";
 import { useEffect, useState } from "react";
 import { IClienteData } from "../interfaces/ClientesData";
-import { EditarCliente, CriarCliente } from "../hooks/useClientes";
-import constantes, { cnpjMask, telefoneMask } from "../../utils/constantes";
+import {
+  EditarCliente,
+  CriarCliente,
+  uploadFileWithParams,
+  EnviarEmail,
+} from "../hooks/useClientes";
+import constantes, {
+  cnpjMask,
+  RetornarDescricaoMes,
+  telefoneMask,
+} from "../../utils/constantes";
 import SelectMonth from "../selectMonth/SelectMonth";
 import SelectYear from "../selectYear/SelectYear";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
+import { HttpStatusCode } from "axios";
+import { notify } from "../../App";
 
 interface ModalProps {
   closeModal(): void;
@@ -28,18 +39,24 @@ function Modal({
   cliente,
   cbAtualizarListagemClientes,
 }: ModalProps) {
-  const [msgErro, setMsgErro] = useState(constantes.STRING_VAZIA);
   const [formData, setFormData] = useState<IClienteData>(() => {
     return cliente;
   });
   const [cnpjDisabled, setCnpjDisabled] = useState(false);
-  const [mes, setMes] = useState("Janeiro");
-  const [ano, setAno] = useState("2024");
+  const [mes, setMes] = useState("");
+  const [ano, setAno] = useState("");
+  const [file, setFile] = useState({} as File);
+  const [uploading, setUploading] = useState(false);
+  const [enviandoEmail, setEnvandoEmail] = useState(false);
 
   useEffect(() => {
     if (formData.id) {
       setCnpjDisabled(true);
     }
+
+    const now = new Date();
+    setAno(now.getFullYear().toString());
+    setMes(RetornarDescricaoMes(now.getMonth()));
   }, []);
 
   const SalvarAlteracoes = async () => {
@@ -52,7 +69,7 @@ function Modal({
           closeModal();
         }
       } catch (error) {
-        setMsgErro("Erro no cadastro...");
+        notify("Erro no cadastro...", "error");
       }
     } else {
       try {
@@ -63,7 +80,7 @@ function Modal({
           closeModal();
         }
       } catch (error) {
-        setMsgErro("Erro no cadastro...");
+        notify("Erro no cadastro...", "error");
       }
     }
   };
@@ -128,7 +145,63 @@ function Modal({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Verifica se há um arquivo selecionado
     if (file) {
-      console.log("Arquivo selecionado:", file.name);
+      setFile(file);
+    }
+  };
+
+  const uploadArquivoCliente = async () => {
+    setUploading(true);
+    try {
+      if (ano == "" || mes == "" || file == ({} as any)) {
+        notify("Preencher campos obrigatórios", "error");
+      }
+
+      try {
+        const res = await uploadFileWithParams(file, {
+          ano: Number(ano),
+          mes: mes,
+          cnpj: cliente.cnpj,
+        });
+
+        if (res.status == HttpStatusCode.Ok) {
+          cliente.arquivos.push({
+            ano: Number(ano),
+            mes: mes,
+            enviado: false,
+            emailEnviado: "",
+            link: res.link,
+          });
+          notify("Arquivo enviado com sucesso", "success");
+        } else {
+          notify("Erro no envio do arquivo!", "error");
+        }
+
+        setFile({} as File);
+        setMes("");
+        setAno("2024");
+      } catch (error) {
+        notify("Erro no envio do arquivo!", "error");
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const EnviarEmailParaContabilidade = async (ano: Number, mes: string) => {
+    setEnvandoEmail(true);
+    try {
+      const res = await EnviarEmail(cliente.id ? cliente.id : "", ano, mes);
+
+      if (res == HttpStatusCode.Ok) {
+        cliente.arquivos.forEach((item) => {
+          if (item.ano == ano && item.mes == mes) {
+            item.enviado = true;
+            item.emailEnviado = cliente.contador.email;
+          }
+        });
+      }
+    } finally {
+      setEnvandoEmail(false);
     }
   };
   return (
@@ -344,13 +417,12 @@ function Modal({
                   flexDirection: "column",
                 }}
               >
-                
-                  <Typography variant="h6" gutterBottom>
-                    Upload
-                  </Typography>
-                
+                <Typography variant="h6" gutterBottom>
+                  Upload
+                </Typography>
+
                 <div className="upload">
-                  <SelectMonth  value={mes} setValue={setMes} />
+                  <SelectMonth value={mes} setValue={setMes} />
                   <SelectYear value={ano} setValue={setAno} />
 
                   <input
@@ -361,6 +433,9 @@ function Modal({
                     onChange={handleFileChange}
                   />
                   <label htmlFor="upload-button">
+                    <p style={{ fontSize: 10 }}>
+                      {file ? file.name : "Nenhum arquivo selecionado"}
+                    </p>
                     <Button
                       variant="contained"
                       component="span"
@@ -377,9 +452,101 @@ function Modal({
                     variant="contained"
                     color="success"
                     endIcon={<SendIcon />}
+                    onClick={uploadArquivoCliente}
+                    disabled={uploading}
                   >
                     Enviar
                   </Button>
+                </div>
+              </Box>
+
+              <Box
+                sx={{
+                  marginTop: 2,
+                  padding: 2,
+                  border: "1px solid #ddd",
+                  borderRadius: 2,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  width: "100%",
+                  flexDirection: "column",
+                }}
+              >
+                <Typography variant="h6" gutterBottom>
+                  Arquivos gerados
+                </Typography>
+                <div
+                  style={{
+                    padding: "20px",
+                    maxWidth: "600px",
+                    margin: "0 auto",
+                    width: "800px",
+                  }}
+                >
+                  <div
+                    style={{
+                      maxHeight: "200px", // Altura máxima
+                      overflowY: "auto", // Ativa a barra de rolagem vertical, se necessário
+                      border: "1px solid #ccc", // Adiciona borda ao redor da tabela
+                      borderRadius: "5px", // Bordas arredondadas
+                    }}
+                  >
+                    {/* Cabeçalho da tabela */}
+                    <div
+                      style={{
+                        display: "flex",
+                        fontWeight: "bold",
+                        padding: "10px",
+                        borderBottom: "2px solid black",
+                        backgroundColor: "#f0f0f0", // Fundo do cabeçalho
+                      }}
+                    >
+                      <div style={{ flex: 2 }}>Mês</div>
+                      <div style={{ flex: 2 }}>Ano</div>
+                      <div style={{ flex: 2 }}>Link</div>
+                      <div style={{ flex: 1 }}>Enviado</div>
+                      <div style={{ flex: 1 }}>Açao</div>
+                    </div>
+
+                    {/* Renderiza os itens da lista */}
+                    {[...cliente.arquivos].reverse().map((item) => (
+                      <div
+                        key={item.mes + item.ano.toString()}
+                        style={{
+                          display: "flex",
+                          padding: "10px",
+                          backgroundColor: item.enviado ? "#d4edda" : "#f8d7da",
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        <div style={{ flex: 2 }}>{item.mes}</div>
+                        <div style={{ flex: 2 }}>{item.ano.toString()}</div>
+                        <div style={{ flex: 2 }}>
+                          <a
+                            style={{ fontSize: "11px" }}
+                            href={item.link ?? ""}
+                          >
+                            Download
+                          </a>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          {item.enviado ? "Sim" : "Não"}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <Button
+                            disabled={item.enviado == true || enviandoEmail}
+                            onClick={() => {
+                              EnviarEmailParaContabilidade(item.ano, item.mes);
+                            }}
+                          >
+                            Enviar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Box>
 
@@ -401,7 +568,6 @@ function Modal({
               </Box>
             </Box>
           </form>
-          {msgErro}
         </div>
       </div>
     </div>

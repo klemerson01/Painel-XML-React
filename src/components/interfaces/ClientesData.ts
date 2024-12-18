@@ -17,6 +17,13 @@ export interface IClienteData {
     xml: Boolean;
     correcao: Boolean;
   };
+  arquivos: {
+    ano: Number;
+    mes: string;
+    enviado: Boolean;
+    emailEnviado: String;
+    link: string;
+  }[];
 }
 
 export const InitCliente: IClienteData = {
@@ -37,4 +44,5 @@ export const InitCliente: IClienteData = {
     xml: false,
     correcao: false,
   },
+  arquivos: [],
 };
