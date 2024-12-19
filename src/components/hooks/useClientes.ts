@@ -1,24 +1,27 @@
 import { AxiosResponse, HttpStatusCode } from "axios";
 import { API_URL } from "../../api/cliente";
 import { IClienteData } from "../interfaces/ClientesData";
+import { IApiResponse } from "../interfaces/ApiResponse";
 
 export const fetchTodosClientes = async (): Promise<
-  AxiosResponse<IClienteData[], any>
+  IApiResponse<IClienteData[]>
 > => {
-  return await API_URL.get<IClienteData[]>("/clientes");
+  return (await API_URL.get<IApiResponse<IClienteData[]>>("/clientes")).data;
 };
 
 export const fetchFiltroClientes = async (
   ano: Number,
   mes: string,
   gerado: boolean
-): Promise<AxiosResponse<IClienteData[], any>> => {
-  return await API_URL.get<IClienteData[]>(`/clientes/${gerado}`, {
-    params: {
-      ano,
-      mes,
-    },
-  });
+): Promise<IApiResponse<IClienteData[]>> => {
+  return (
+    await API_URL.get<IApiResponse<IClienteData[]>>(`/clientes/${gerado}`, {
+      params: {
+        ano,
+        mes,
+      },
+    })
+  ).data;
 };
 
 export const CriarCliente = async (
