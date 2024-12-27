@@ -10,9 +10,10 @@ interface ISelectYear {
   value: string;
   setValue: Function;
   minWidth?: Number;
+  disabled?: boolean;
 }
 
-const SelectYear = ({ value, setValue, minWidth }: ISelectYear) => {
+const SelectYear = ({ value, setValue, disabled, minWidth }: ISelectYear) => {
   const handleChange = (event: SelectChangeEvent) => {
     setValue(event.target.value);
   };
@@ -25,6 +26,7 @@ const SelectYear = ({ value, setValue, minWidth }: ISelectYear) => {
         value={value}
         label="Ano"
         onChange={handleChange}
+        disabled={disabled}
       >
         <MenuItem value={"2019"}>2019</MenuItem>
         <MenuItem value={"2020"}>2020</MenuItem>

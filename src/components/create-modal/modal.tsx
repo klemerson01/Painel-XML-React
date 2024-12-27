@@ -6,6 +6,7 @@ import {
   Typography,
   FormControlLabel,
   Button,
+  Switch,
 } from "@mui/material";
 import { Checkbox } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -27,6 +28,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
 import { HttpStatusCode } from "axios";
 import { notify } from "../../App";
+import SelectSoftware from "../selectSoftware/SelectSoftware";
+
 
 interface ModalProps {
   closeModal(): void;
@@ -48,10 +51,15 @@ function Modal({
   const [file, setFile] = useState({} as File);
   const [uploading, setUploading] = useState(false);
   const [enviandoEmail, setEnvandoEmail] = useState(false);
+  const [desativar, setDesativar] = useState(false);
+  const [exibirUpload, setExibirUpload] = useState(false);
+
+  const mensagem = !desativar ? "Desativar" : "Desativado";
 
   useEffect(() => {
     if (formData.id) {
       setCnpjDisabled(true);
+      setExibirUpload(true)
     }
 
     const now = new Date();
@@ -66,7 +74,9 @@ function Modal({
         if (novoCliente.status == constantes.HTTP_RESPONSE_CREATE) {
           cbAtualizarListagemClientes(novoCliente.data);
 
-          closeModal();
+          
+            closeModal();
+         
         }
       } catch (error) {
         notify("Erro no cadastro...", "error");
@@ -77,7 +87,9 @@ function Modal({
         if (clienteAlterado.status == constantes.HTTP_RESPONSE_OK) {
           cbAtualizarListagemClientes(clienteAlterado.data);
 
-          closeModal();
+          
+            closeModal();
+         
         }
       } catch (error) {
         notify("Erro no cadastro...", "error");
@@ -103,7 +115,7 @@ function Modal({
     }
   };
 
-  const handleChangeContabil = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChangeContabil = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name == "telefone") {
       const limparMascara = value.replace(/\D/g, "");
@@ -148,6 +160,13 @@ function Modal({
       setFile(file);
     }
   };
+
+  const handleSetSoft = (valueSoft: string) => {
+    setFormData({
+      ...formData,
+      software: valueSoft
+    });
+  }
 
   const uploadArquivoCliente = async () => {
     setUploading(true);
@@ -206,9 +225,10 @@ function Modal({
   };
   return (
     <div className="modal-fundo" onClick={handleOverlayClick}>
+      
       <div className="modal-body">
         <div id="modal-cliente">
-          <form>
+          <form >
             <Box
               sx={{
                 display: "flex",
@@ -221,9 +241,20 @@ function Modal({
                 borderRadius: 2,
               }}
             >
-              <Typography variant="h6" gutterBottom>
-                Cliente
-              </Typography>
+              <div className="rowCliente">
+                <Typography variant="h6" gutterBottom>
+                  Cliente
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                  {mensagem}
+                  <Switch
+                    checked={desativar}
+                    onChange={() => setDesativar(!desativar)}
+                    name="loading"
+                    color="error"
+                  />
+                </Typography>
+              </div>
               <Box
                 sx={{
                   display: "flex",
@@ -239,6 +270,7 @@ function Modal({
                   margin="normal"
                   value={formData.razao}
                   onChange={handleChange}
+                  required
                 />
 
                 <TextField
@@ -260,9 +292,10 @@ function Modal({
                   value={cnpjMask(formData.cnpj)}
                   onChange={handleChange}
                   disabled={cnpjDisabled}
+                  required
                 />
 
-                <TextField
+                {/* <TextField
                   className="input-modal"
                   label="Software"
                   name="software"
@@ -270,7 +303,8 @@ function Modal({
                   margin="normal"
                   value={formData.software}
                   onChange={handleChange}
-                />
+                /> */}
+                 <SelectSoftware value={formData.software} setValue={handleSetSoft}/>
 
                 <TextField
                   className="input-modal"
@@ -280,6 +314,8 @@ function Modal({
                   margin="normal"
                   value={telefoneMask(formData.telefone)}
                   onChange={handleChange}
+                  
+                  
                 />
 
                 <TextField
@@ -343,6 +379,7 @@ function Modal({
                     margin="normal"
                     value={formData.contador.email}
                     onChange={handleChangeContabil}
+                    required
                   />
                 </Box>
               </Box>
@@ -404,151 +441,156 @@ function Modal({
                   />
                 </FormGroup>
               </Box>
-              <Box
-                sx={{
-                  marginTop: 2,
-                  padding: 2,
-                  border: "1px solid #ddd",
-                  borderRadius: 2,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  width: "100%",
-                  flexDirection: "column",
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Upload
-                </Typography>
-
-                <div className="upload">
-                  <SelectMonth value={mes} setValue={setMes} />
-                  <SelectYear value={ano} setValue={setAno} />
-
-                  <input
-                    type="file"
-                    accept=".rar,.zip"
-                    style={{ display: "none" }}
-                    id="upload-button"
-                    onChange={handleFileChange}
-                  />
-                  <label htmlFor="upload-button">
-                    <p style={{ fontSize: 10 }}>
-                      {file ? file.name : "Nenhum arquivo selecionado"}
-                    </p>
-                    <Button
-                      variant="contained"
-                      component="span"
-                      color="info"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload
-                    </Button>
-                  </label>
-                </div>
-
-                <div className="buttonEnviar">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    endIcon={<SendIcon />}
-                    onClick={uploadArquivoCliente}
-                    disabled={uploading}
-                  >
-                    Enviar
-                  </Button>
-                </div>
-              </Box>
-
-              <Box
-                sx={{
-                  marginTop: 2,
-                  padding: 2,
-                  border: "1px solid #ddd",
-                  borderRadius: 2,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  width: "100%",
-                  flexDirection: "column",
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Arquivos gerados
-                </Typography>
-                <div
-                  style={{
-                    padding: "20px",
-                    maxWidth: "600px",
-                    margin: "0 auto",
-                    width: "800px",
+                {exibirUpload && 
+                <>
+                  <Box
+                  sx={{
+                    marginTop: 2,
+                    padding: 2,
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 2,
+                    width: "100%",
+                    flexDirection: "column",
                   }}
                 >
+                  <Typography variant="h6" gutterBottom>
+                    Upload
+                  </Typography>
+  
+                  <div className="upload">
+                    <SelectMonth value={mes} setValue={setMes} />
+                    <SelectYear value={ano} setValue={setAno} />
+  
+                    <input
+                      type="file"
+                      accept=".rar,.zip"
+                      style={{ display: "none" }}
+                      id="upload-button"
+                      onChange={handleFileChange}
+                    />
+                    <label htmlFor="upload-button">
+                      <p style={{ fontSize: 10 }}>
+                        {file ? file.name : "Nenhum arquivo selecionado"}
+                      </p>
+                      <Button
+                        variant="contained"
+                        component="span"
+                        color="info"
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Upload
+                      </Button>
+                    </label>
+                  </div>
+  
+                  <div className="buttonEnviar">
+                    <Button
+                      variant="contained"
+                      color="success"
+                      endIcon={<SendIcon />}
+                      onClick={uploadArquivoCliente}
+                      disabled={uploading}
+                    >
+                      Enviar
+                    </Button>
+                  </div>
+                </Box>
+  
+                <Box
+                  sx={{
+                    marginTop: 2,
+                    padding: 2,
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 2,
+                    width: "100%",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Arquivos gerados
+                  </Typography>
                   <div
                     style={{
-                      maxHeight: "200px", // Altura máxima
-                      overflowY: "auto", // Ativa a barra de rolagem vertical, se necessário
-                      border: "1px solid #ccc", // Adiciona borda ao redor da tabela
-                      borderRadius: "5px", // Bordas arredondadas
+                      padding: "20px",
+                      maxWidth: "600px",
+                      margin: "0 auto",
+                      width: "800px",
                     }}
                   >
-                    {/* Cabeçalho da tabela */}
                     <div
                       style={{
-                        display: "flex",
-                        fontWeight: "bold",
-                        padding: "10px",
-                        borderBottom: "2px solid black",
-                        backgroundColor: "#f0f0f0", // Fundo do cabeçalho
+                        maxHeight: "200px", // Altura máxima
+                        overflowY: "auto", // Ativa a barra de rolagem vertical, se necessário
+                        border: "1px solid #ccc", // Adiciona borda ao redor da tabela
+                        borderRadius: "5px", // Bordas arredondadas
                       }}
                     >
-                      <div style={{ flex: 2 }}>Mês</div>
-                      <div style={{ flex: 2 }}>Ano</div>
-                      <div style={{ flex: 2 }}>Link</div>
-                      <div style={{ flex: 1 }}>Enviado</div>
-                      <div style={{ flex: 1 }}>Açao</div>
-                    </div>
-
-                    {/* Renderiza os itens da lista */}
-                    {[...cliente.arquivos].reverse().map((item) => (
+                      {/* Cabeçalho da tabela */}
                       <div
-                        key={item.mes + item.ano.toString()}
                         style={{
                           display: "flex",
+                          fontWeight: "bold",
                           padding: "10px",
-                          backgroundColor: item.enviado ? "#d4edda" : "#f8d7da",
-                          border: "1px solid #ccc",
-                          borderRadius: "5px",
+                          borderBottom: "2px solid black",
+                          backgroundColor: "#f0f0f0", // Fundo do cabeçalho
                         }}
                       >
-                        <div style={{ flex: 2 }}>{item.mes}</div>
-                        <div style={{ flex: 2 }}>{item.ano.toString()}</div>
-                        <div style={{ flex: 2 }}>
-                          <a
-                            style={{ fontSize: "11px" }}
-                            href={item.link ?? ""}
-                          >
-                            Download
-                          </a>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          {item.enviado ? "Sim" : "Não"}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <Button
-                            disabled={item.enviado == true || enviandoEmail}
-                            onClick={() => {
-                              EnviarEmailParaContabilidade(item.ano, item.mes);
-                            }}
-                          >
-                            Enviar
-                          </Button>
-                        </div>
+                        <div style={{ flex: 2 }}>Mês</div>
+                        <div style={{ flex: 2 }}>Ano</div>
+                        <div style={{ flex: 2 }}>Link</div>
+                        <div style={{ flex: 1 }}>Enviado</div>
+                        <div style={{ flex: 1 }}>Açao</div>
                       </div>
-                    ))}
+  
+                      {/* Renderiza os itens da lista */}
+                      {[...cliente.arquivos].reverse().map((item) => (
+                        <div
+                          key={item.mes + item.ano.toString()}
+                          style={{
+                            display: "flex",
+                            padding: "10px",
+                            backgroundColor: item.enviado ? "#d4edda" : "#f8d7da",
+                            border: "1px solid #ccc",
+                            borderRadius: "5px",
+                          }}
+                        >
+                          <div style={{ flex: 2 }}>{item.mes}</div>
+                          <div style={{ flex: 2 }}>{item.ano.toString()}</div>
+                          <div style={{ flex: 2 }}>
+                            <a
+                              style={{ fontSize: "11px" }}
+                              href={item.link ?? ""}
+                            >
+                              Download
+                            </a>
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            {item.enviado ? "Sim" : "Não"}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <Button
+                              disabled={item.enviado == true || enviandoEmail}
+                              onClick={() => {
+                                EnviarEmailParaContabilidade(item.ano, item.mes);
+                              }}
+                            >
+                              Enviar
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </Box>
+                </Box>
+                </>
+                }
+              
 
               <Box
                 sx={{
@@ -567,6 +609,7 @@ function Modal({
                 </Button>
               </Box>
             </Box>
+           
           </form>
         </div>
       </div>

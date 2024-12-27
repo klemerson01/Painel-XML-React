@@ -10,9 +10,10 @@ interface ISelectMonth {
   value: string;
   setValue: Function;
   minWidth?: Number;
+  disabled?: boolean;
 }
 
-const SelectMonth = ({ value, setValue, minWidth }: ISelectMonth) => {
+const SelectMonth = ({ value, setValue, disabled, minWidth }: ISelectMonth) => {
   const handleChange = (event: SelectChangeEvent) => {
     setValue(event.target.value);
   };
@@ -25,6 +26,7 @@ const SelectMonth = ({ value, setValue, minWidth }: ISelectMonth) => {
         value={value}
         label="Mes"
         onChange={handleChange}
+        disabled={disabled}
       >
         <MenuItem value={"Janeiro"}>Janeiro</MenuItem>
         <MenuItem value={"Fevereiro"}>Fevereiro</MenuItem>

@@ -1,5 +1,5 @@
 .card {
-  background-color: #ffffffce;
+  background-color: #d3d0d0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,22 +10,22 @@
   height: 200px;
   cursor: pointer;
   flex: 1 1 calc(25% - 16px);
-  /* flex-wrap: wrap; */
   max-width: calc(25% - 16px);
 }
+
 .card:hover {
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 7px 0px;
+  box-shadow: rgba(39, 39, 46, 0.5) 0px 7px 15px 0px;
   transform: scale(1.05);
 }
 
 .card h2 {
-   margin: 0;
-   /* background-color: red; */
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
-   max-width:  calc(100% - 10px);;
-   color: #1c94ab;
+  margin: 0;
+  /* background-color: red; */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 10px);
+  color: #1c94ab;
 }
 
 .card h3 {
