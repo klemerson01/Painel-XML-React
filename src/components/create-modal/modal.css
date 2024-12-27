@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   z-index: 999;
-  }
+}
 
 .modal-fundo .modal-body {
   background-color: #fffcfc;
@@ -46,6 +46,10 @@
   gap: 90px;
   margin: 0;
   padding: 0;
-  
 }
 
+.rowCliente {
+  width: 100%;
+  display: flex; /* Ativa o Flexbox */
+  justify-content: space-between; /* Coloca os itens nos extremos */
+}

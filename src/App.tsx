@@ -17,6 +17,7 @@ import SelectYear from "./components/selectYear/SelectYear";
 import SelectFilter from "./components/selectFilter/SelectFilter";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, TypeOptions, toast } from "react-toastify";
+import SelectSoftware from "./components/selectSoftware/SelectSoftware";
 
 export const notify = (msg: string, tipo: TypeOptions) => {
   toast.info(msg, {
@@ -94,6 +95,7 @@ function App() {
 
   return (
     <>
+    
       <div className="body">
         <div className="titulo">
           <h2 className="painel">Painel XML</h2>
@@ -111,8 +113,8 @@ function App() {
             </div>
             {/* Filtros */}
             <div className="filtros">
-              <SelectMonth value={mes} setValue={setMes} />
-              <SelectYear value={ano} setValue={setAno} />
+              <SelectMonth value={mes} setValue={setMes}  disabled={filtro == EnumFiltro.TODOS}/>
+              <SelectYear value={ano} setValue={setAno} disabled={filtro == EnumFiltro.TODOS} />
               <SelectFilter value={filtro} setValue={setFiltro} />
             </div>
             <div className="buttonFiltrar">
@@ -127,6 +129,7 @@ function App() {
 
           <div className="bodyCards">
             <div className="cards">
+              
               {data?.map((cliente) => {
                 return (
                   <Card
@@ -141,6 +144,7 @@ function App() {
             </div>
           </div>
         </div>
+       
       </div>
 
       {modalAberto && clienteSelecionado && (
@@ -150,6 +154,7 @@ function App() {
           cbAtualizarListagemClientes={atualizarDados}
         />
       )}
+     
       <ToastContainer />
     </>
   );

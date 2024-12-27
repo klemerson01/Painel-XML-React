@@ -13,13 +13,14 @@ export const cnpjMask = (value: string) => {
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d)/, "$1/$2")
     .replace(/(\d{4})(\d)/, "$1-$2")
-    .replace(/(-\d{2})\d+?$/, "$1");
+    .replace(/(-\d{2})\d+?$/, "$1")
+    
 };
 
 export const telefoneMask = (value: string) => {
   if (!value) return "";
   value = value.replace(/\D/g, "");
-  value = value.replace(/(\d{2})(\d)/, "($1) $2");
+  value = value.replace(/(\d{2})(\d)/, "($1) $2").slice(0,14)
   value = value.replace(/(\d)(\d{4})$/, "$1-$2");
   return value;
 };
@@ -29,6 +30,8 @@ export const enum EnumFiltro {
   GERADOS = "1",
   NAO_GERADOS = "2",
 }
+
+export const softwares = ['SYSPDV', 'VAREJO FACIL', 'HIPER PDV', 'DIGISAT', 'EASYASSIST', 'CPLUG', 'PRODO', 'CLIPPER']
 
 export const RetornarDescricaoMes = (mes: Number) => {
   switch (mes) {
