@@ -2,6 +2,8 @@ import { AxiosResponse, HttpStatusCode } from "axios";
 import { API_URL } from "../../api/cliente";
 import { IClienteData } from "../interfaces/ClientesData";
 import { IApiResponse } from "../interfaces/ApiResponse";
+import { IResponseUpdload } from "../interfaces/ResponseUpload";
+import { notify } from "../../App";
 
 export const fetchTodosClientes = async (): Promise<
   IApiResponse<IClienteData[]>
@@ -26,22 +28,25 @@ export const fetchFiltroClientes = async (
 
 export const CriarCliente = async (
   data: IClienteData
-): Promise<AxiosResponse<IClienteData, any>> => {
-  return await API_URL.post<IClienteData>(`/cliente`, {
-    ...data,
-  });
+): Promise<IApiResponse<IClienteData>> => {
+  return (
+    await API_URL.post<IApiResponse<IClienteData>>(`/cliente`, {
+      ...data,
+    })
+  ).data;
 };
 
 export const EditarCliente = async (
   data: IClienteData
-): Promise<AxiosResponse<IClienteData, any>> => {
-  return await API_URL.put<IClienteData>(`/cliente/${data.cnpj}`, {
-    ...data,
-  });
+): Promise<IApiResponse<IClienteData>> => {
+  return (
+    await API_URL.put<IApiResponse<IClienteData>>(`/cliente/${data.cnpj}`, {
+      ...data,
+    })
+  ).data;
 };
 
 export interface IDTOUploadArquivo {
-  cnpj: string;
   mes: string;
   ano: Number;
 }
@@ -52,35 +57,47 @@ export interface RetornoUploadArquivo {
 }
 
 export const uploadFileWithParams = async (
+  id: String,
   file: any,
   params: IDTOUploadArquivo
-): Promise<RetornoUploadArquivo> => {
+): Promise<IApiResponse<IResponseUpdload>> => {
   try {
-    // Cria um objeto FormData
     const formData = new FormData();
 
-    // Adiciona o arquivo ao FormData
     formData.append("file", file);
-
-    formData.append("cnpj", params.cnpj);
     formData.append("mes", params.mes);
     formData.append("ano", params.ano.toString());
 
-    // Realiza a requisição com axios
-    const response = await API_URL.post("/cliente/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data", // Define o cabeçalho apropriado
-      },
-    });
+    const response: Promise<IApiResponse<IResponseUpdload>> = (
+      await API_URL.post(`/cliente/upload/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+    ).data;
 
-    // Retorna a resposta
+    return response;
+  } catch (err: any) {
+    if (err.response) {
+      // Erros com resposta da API (status code fora do intervalo 2xx)
+      const { status, data } = err.response;
+      notify(
+        `Erro ${status}: ${data.message || "Algo deu errado na API."}`,
+        "error"
+      );
+    } else if (err.request) {
+      // Erros relacionados à requisição (nenhuma resposta recebida)
+      notify("Erro de rede: A API não respondeu.", "error");
+    } else {
+      // Outros erros (como problemas na configuração do Axios)
+      notify(`Erro inesperado: ${err.message}`, "error");
+    }
     return {
-      status: response.status,
-      link: response.data.url,
+      status: HttpStatusCode.BadRequest,
+      message: "Erro inesperado.",
+      data: { url: "" },
+      errors: [err.message],
     };
-  } catch (error) {
-    console.error("Erro ao realizar o upload:", error);
-    throw error;
   }
 };
 
@@ -88,11 +105,13 @@ export const EnviarEmail = async (
   id: string,
   ano: Number,
   mes: string
-): Promise<HttpStatusCode> => {
-  const res = await API_URL.post<IClienteData>(`/cliente/envio-email/${id}`, {
-    ano,
-    mes,
-  });
+): Promise<IApiResponse<any>> => {
+  const response = (
+    await API_URL.post<IApiResponse<any>>(`/cliente/envio-email/${id}`, {
+      ano,
+      mes,
+    })
+  ).data;
 
-  return res.status;
+  return response;
 };

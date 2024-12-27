@@ -27,6 +27,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SendIcon from "@mui/icons-material/Send";
 import { HttpStatusCode } from "axios";
 import { notify } from "../../App";
+import { IResponseUpdload } from "../interfaces/ResponseUpload";
+import { IApiResponse } from "../interfaces/ApiResponse";
 
 interface ModalProps {
   closeModal(): void;
@@ -74,13 +76,13 @@ function Modal({
     } else {
       try {
         const clienteAlterado = await EditarCliente(formData);
+
         if (clienteAlterado.status == constantes.HTTP_RESPONSE_OK) {
           cbAtualizarListagemClientes(clienteAlterado.data);
-
           closeModal();
         }
       } catch (error) {
-        notify("Erro no cadastro...", "error");
+        notify("Erro no edicao...", "error");
       }
     }
   };
@@ -154,34 +156,28 @@ function Modal({
     try {
       if (ano == "" || mes == "" || file == ({} as any)) {
         notify("Preencher campos obrigatórios", "error");
+        return;
       }
 
-      try {
-        const res = await uploadFileWithParams(file, {
+      const res = await uploadFileWithParams(cliente.id!!, file, {
+        ano: Number(ano),
+        mes: mes,
+      });
+
+      if (res.status == HttpStatusCode.Ok) {
+        cliente.arquivos.push({
           ano: Number(ano),
           mes: mes,
-          cnpj: cliente.cnpj,
+          enviado: false,
+          emailEnviado: "",
+          link: res.data.url,
         });
-
-        if (res.status == HttpStatusCode.Ok) {
-          cliente.arquivos.push({
-            ano: Number(ano),
-            mes: mes,
-            enviado: false,
-            emailEnviado: "",
-            link: res.link,
-          });
-          notify("Arquivo enviado com sucesso", "success");
-        } else {
-          notify("Erro no envio do arquivo!", "error");
-        }
-
-        setFile({} as File);
-        setMes("");
-        setAno("2024");
-      } catch (error) {
-        notify("Erro no envio do arquivo!", "error");
+        notify(res.message, "success");
       }
+
+      setFile({} as File);
+      setMes("");
+      setAno("2024");
     } finally {
       setUploading(false);
     }
@@ -192,7 +188,7 @@ function Modal({
     try {
       const res = await EnviarEmail(cliente.id ? cliente.id : "", ano, mes);
 
-      if (res == HttpStatusCode.Ok) {
+      if (res.status == HttpStatusCode.Ok) {
         cliente.arquivos.forEach((item) => {
           if (item.ano == ano && item.mes == mes) {
             item.enviado = true;
