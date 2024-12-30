@@ -23,10 +23,10 @@ export const notify = (msg: string, tipo: TypeOptions) => {
   toast.info(msg, {
     type: tipo,
     position: "top-right",
-    autoClose: 5000, // Fecha automaticamente após 5 segundos
+    autoClose: 2000, // Fecha automaticamente após 5 segundos
     hideProgressBar: false, // Mostra a barra de progresso
     closeOnClick: true,
-    pauseOnHover: true,
+    pauseOnHover: false,
     draggable: true,
   });
 };
@@ -93,43 +93,70 @@ function App() {
     );
   };
 
+  const handleSearch = (value: string) => {
+    if (value.length === 0) {
+      fetchTodosClientes().then((retorno) => {
+        setData(retorno.data);
+      });
+      return;
+    }
+
+    let clientesFiltrados = data.filter((cliente) =>
+      cliente.fantasia.toLowerCase().includes(value.toLowerCase())
+    );
+
+    if (clientesFiltrados.length === 0) {
+      clientesFiltrados = data.filter((cliente) =>
+        cliente.cnpj.toLowerCase().includes(value.toLowerCase())
+      );
+    }
+    setData(clientesFiltrados);
+  };
+
   return (
     <>
-    
       <div className="body">
         <div className="titulo">
-          <h2 className="painel">Painel XML</h2>
+          <p>Monitoramento de Clientes</p>
+          <input
+            type="text"
+            placeholder="Pesquisar clientes..."
+            className="input-pesquisa"
+            onChange={(e) => handleSearch(e.target.value)}
+          />
         </div>
-
-        <div className="columns">
-          <div className="menu">
-            <div className="buttonNovoCliente">
-              <Button
-                variant="contained"
-                onClick={() => abrirModal(InitCliente)}
-              >
-                Novo Cliente
-              </Button>
-            </div>
-            {/* Filtros */}
-            <div className="filtros">
-              <SelectMonth value={mes} setValue={setMes}  disabled={filtro == EnumFiltro.TODOS}/>
-              <SelectYear value={ano} setValue={setAno} disabled={filtro == EnumFiltro.TODOS} />
-              <SelectFilter value={filtro} setValue={setFiltro} />
-            </div>
-            <div className="buttonFiltrar">
-              <Button variant="contained" onClick={filtrarPorData}>
-                filtrar
-              </Button>
-            </div>
-            <div className="resultados">
-              {`Exibindo ${data.length} registros`}{" "}
-            </div>
+        <div className="menu">
+          <div className="buttonNovoCliente">
+            <Button variant="contained" onClick={() => abrirModal(InitCliente)}>
+              Novo Cliente
+            </Button>
           </div>
-
+          {/* Filtros */}
+          <div className="filtros">
+            <SelectMonth
+              value={mes}
+              setValue={setMes}
+              disabled={filtro == EnumFiltro.TODOS}
+            />
+            <SelectYear
+              value={ano}
+              setValue={setAno}
+              disabled={filtro == EnumFiltro.TODOS}
+            />
+            <SelectFilter value={filtro} setValue={setFiltro} />
+          </div>
+          <div className="buttonFiltrar">
+            <Button variant="contained" onClick={filtrarPorData}>
+              filtrar
+            </Button>
+          </div>
+          <div className="resultados">
+            {`Exibindo ${data.length} registros`}{" "}
+          </div>
+        </div>
+        <div className="columns">
           <div className="bodyCards">
             <div className="cards">
-              
               {data?.map((cliente) => {
                 return (
                   <Card
@@ -137,6 +164,7 @@ function App() {
                     nome={cliente.fantasia}
                     cnpj={cliente.cnpj}
                     software={cliente.software}
+                    ativo={cliente.ativo}
                     click={() => abrirModal(cliente)}
                   />
                 );
@@ -144,18 +172,16 @@ function App() {
             </div>
           </div>
         </div>
-       
-      </div>
+        {modalAberto && clienteSelecionado && (
+          <Modal
+            closeModal={fecharModal}
+            cliente={clienteSelecionado}
+            cbAtualizarListagemClientes={atualizarDados}
+          />
+        )}
 
-      {modalAberto && clienteSelecionado && (
-        <Modal
-          closeModal={fecharModal}
-          cliente={clienteSelecionado}
-          cbAtualizarListagemClientes={atualizarDados}
-        />
-      )}
-     
-      <ToastContainer />
+        <ToastContainer />
+      </div>
     </>
   );
 }

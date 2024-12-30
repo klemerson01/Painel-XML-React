@@ -24,6 +24,7 @@ export interface IClienteData {
     emailEnviado: String;
     link: string;
   }[];
+  ativo: Boolean;
 }
 
 export const InitCliente: IClienteData = {
@@ -45,4 +46,5 @@ export const InitCliente: IClienteData = {
     correcao: false,
   },
   arquivos: [],
+  ativo: true,
 };

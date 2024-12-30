@@ -115,3 +115,34 @@ export const EnviarEmail = async (
 
   return response;
 };
+
+export const Deletar = async (
+  id: string,
+  ano: Number,
+  mes: string
+): Promise<IApiResponse<any>> => {
+  const response = (
+    await API_URL.delete<IApiResponse<any>>(`/cliente/arquivo/${id}`, {
+      data: {
+        ano,
+        mes,
+      },
+    })
+  ).data;
+
+  notify(response.message, response.status == 200 ? "success" : "error");
+  return response;
+};
+
+export const MudarStatusCliente = async (
+  id: string
+): Promise<IApiResponse<any>> => {
+  const response = (
+    await API_URL.post<IApiResponse<any>>(`/cliente/status/${id}`, {
+      data: {},
+    })
+  ).data;
+
+  notify(response.message, response.status == 200 ? "success" : "error");
+  return response;
+};

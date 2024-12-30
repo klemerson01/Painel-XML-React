@@ -16,9 +16,12 @@ import {
   CriarCliente,
   uploadFileWithParams,
   EnviarEmail,
+  Deletar,
+  MudarStatusCliente,
 } from "../hooks/useClientes";
-import constantes, {
+import {
   cnpjMask,
+  cpfMask,
   RetornarDescricaoMes,
   telefoneMask,
 } from "../../utils/constantes";
@@ -52,10 +55,10 @@ function Modal({
   const [file, setFile] = useState({} as File);
   const [uploading, setUploading] = useState(false);
   const [enviandoEmail, setEnvandoEmail] = useState(false);
-  const [desativar, setDesativar] = useState(false);
+  const [status, setStatus] = useState(false);
   const [exibirUpload, setExibirUpload] = useState(false);
 
-  const mensagem = !desativar ? "Desativar" : "Desativado";
+  const mensagem = !status ? "Desativar" : "Desativado";
 
   useEffect(() => {
     if (formData.id) {
@@ -72,9 +75,8 @@ function Modal({
     if (!formData.id) {
       try {
         const novoCliente = await CriarCliente(formData);
-        if (novoCliente.status == constantes.HTTP_RESPONSE_CREATE) {
+        if (novoCliente.status == HttpStatusCode.Created) {
           cbAtualizarListagemClientes(novoCliente.data);
-
           closeModal();
         }
       } catch (error) {
@@ -83,8 +85,7 @@ function Modal({
     } else {
       try {
         const clienteAlterado = await EditarCliente(formData);
-
-        if (clienteAlterado.status == constantes.HTTP_RESPONSE_OK) {
+        if (clienteAlterado.status == HttpStatusCode.Created) {
           cbAtualizarListagemClientes(clienteAlterado.data);
 
           closeModal();
@@ -179,7 +180,7 @@ function Modal({
         mes: mes,
       });
 
-      if (res.status == HttpStatusCode.Ok) {
+      if (res.status == HttpStatusCode.Created) {
         cliente.arquivos.push({
           ano: Number(ano),
           mes: mes,
@@ -215,6 +216,38 @@ function Modal({
       setEnvandoEmail(false);
     }
   };
+
+  const DeletarArquivo = async (ano: Number, mes: string) => {
+    setEnvandoEmail(true);
+    try {
+      const res = await Deletar(cliente.id ? cliente.id : "", ano, mes);
+
+      if (res.status == HttpStatusCode.Ok) {
+        cliente.arquivos.forEach((item) => {
+          if (item.ano == ano && item.mes == mes) {
+            cliente.arquivos.splice(cliente.arquivos.indexOf(item), 1);
+          }
+        });
+      }
+    } finally {
+      setEnvandoEmail(false);
+    }
+  };
+
+  const handleChangeStatus = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const res = await MudarStatusCliente(cliente.id ? cliente.id : "");
+
+    if (res.status == HttpStatusCode.Ok) {
+      cliente.ativo = !cliente.ativo;
+      setFormData({
+        ...formData,
+        ativo: !formData.ativo,
+      });
+    }
+  };
+
   return (
     <div className="modal-fundo" onClick={handleOverlayClick}>
       <div className="modal-body">
@@ -237,12 +270,12 @@ function Modal({
                   Cliente
                 </Typography>
                 <Typography variant="h6" gutterBottom>
-                  {mensagem}
+                  Ativo
                   <Switch
-                    checked={desativar}
-                    onChange={() => setDesativar(!desativar)}
+                    checked={cliente.ativo == true}
+                    onChange={handleChangeStatus}
                     name="loading"
-                    color="error"
+                    color="primary"
                   />
                 </Typography>
               </div>
@@ -280,21 +313,16 @@ function Modal({
                   name="cnpj"
                   fullWidth
                   margin="normal"
-                  value={cnpjMask(formData.cnpj)}
+                  value={
+                    formData.cnpj.length == 11
+                      ? cpfMask(formData.cnpj)
+                      : cnpjMask(formData.cnpj)
+                  }
                   onChange={handleChange}
                   disabled={cnpjDisabled}
                   required
                 />
 
-                {/* <TextField
-                  className="input-modal"
-                  label="Software"
-                  name="software"
-                  fullWidth
-                  margin="normal"
-                  value={formData.software}
-                  onChange={handleChange}
-                /> */}
                 <SelectSoftware
                   value={formData.software}
                   setValue={handleSetSoft}
@@ -509,10 +537,10 @@ function Modal({
                     </Typography>
                     <div
                       style={{
-                        padding: "20px",
-                        maxWidth: "600px",
+                        padding: "0",
+                        maxWidth: "100%",
                         margin: "0 auto",
-                        width: "800px",
+                        width: "100%",
                       }}
                     >
                       <div
@@ -536,8 +564,9 @@ function Modal({
                           <div style={{ flex: 2 }}>Mês</div>
                           <div style={{ flex: 2 }}>Ano</div>
                           <div style={{ flex: 2 }}>Link</div>
-                          <div style={{ flex: 1 }}>Enviado</div>
-                          <div style={{ flex: 1 }}>Açao</div>
+                          <div style={{ flex: 2 }}>Enviado</div>
+                          <div style={{ flex: 1 }}>Enviar</div>
+                          <div style={{ flex: 1 }}>Deletar</div>
                         </div>
 
                         {/* Renderiza os itens da lista */}
@@ -564,7 +593,7 @@ function Modal({
                                 Download
                               </a>
                             </div>
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 2 }}>
                               {item.enviado ? "Sim" : "Não"}
                             </div>
                             <div style={{ flex: 1 }}>
@@ -578,6 +607,16 @@ function Modal({
                                 }}
                               >
                                 Enviar
+                              </Button>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <Button
+                                disabled={item.enviado == true || enviandoEmail}
+                                onClick={() => {
+                                  DeletarArquivo(item.ano, item.mes);
+                                }}
+                              >
+                                Excluir
                               </Button>
                             </div>
                           </div>
