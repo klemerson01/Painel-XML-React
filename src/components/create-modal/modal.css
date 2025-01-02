@@ -39,13 +39,12 @@
 }
 
 .upload {
-  /* background-color: red; */
   display: flex;
-  align-items: center;
-  /* justify-content: center; */
-  gap: 90px;
+  flex-direction: column;
+  gap: 20px;
   margin: 0;
   padding: 0;
+  width: 500px;
 }
 
 .rowCliente {
@@ -53,3 +52,23 @@
   display: flex; /* Ativa o Flexbox */
   justify-content: space-between; /* Coloca os itens nos extremos */
 }
+
+.test {
+  background-color: green;
+ height: 55px;
+
+ 
+ 
+}
+
+.addArquivos{
+  
+  display: flex;
+  flex-direction: row;
+  width: 800px;
+  align-items: center;
+  
+  
+
+}
+

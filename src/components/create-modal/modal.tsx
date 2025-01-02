@@ -476,46 +476,51 @@ function Modal({
                       flexDirection: "column",
                     }}
                   >
-                    <Typography variant="h6" gutterBottom>
-                      Upload
-                    </Typography>
+                    <div>
+                      <Typography variant="h6" gutterBottom>
+                        Upload
+                      </Typography>
+                    </div>
 
                     <div className="upload">
                       <SelectMonth value={mes} setValue={setMes} />
                       <SelectYear value={ano} setValue={setAno} />
 
-                      <input
-                        type="file"
-                        accept=".rar,.zip"
-                        style={{ display: "none" }}
-                        id="upload-button"
-                        onChange={handleFileChange}
-                      />
-                      <label htmlFor="upload-button">
-                        <p style={{ fontSize: 10 }}>
-                          {file ? file.name : "Nenhum arquivo selecionado"}
-                        </p>
+                      <div>
+                        <label htmlFor="upload-button" className="addArquivos">
+                          <Button
+                            variant="contained"
+                            component="span"
+                            color="info"
+                            startIcon={<CloudUploadIcon />}
+                            sx={{ marginRight: "20px" }}
+                          >
+                            Adicionar arquivos
+                            <input
+                              type="file"
+                              accept=".rar,.zip"
+                              style={{ display: "none" }}
+                              id="upload-button"
+                              onChange={handleFileChange}
+                            />
+                          </Button>
+                          <p style={{ fontSize: 15 }}>
+                            {file ? file.name : "Nenhum arquivo selecionado"}
+                          </p>
+                        </label>
+                      </div>
+
+                      <div className="buttonEnviar">
                         <Button
                           variant="contained"
-                          component="span"
-                          color="info"
-                          startIcon={<CloudUploadIcon />}
+                          color="success"
+                          endIcon={<SendIcon />}
+                          onClick={uploadArquivoCliente}
+                          disabled={uploading}
                         >
                           Upload
                         </Button>
-                      </label>
-                    </div>
-
-                    <div className="buttonEnviar">
-                      <Button
-                        variant="contained"
-                        color="success"
-                        endIcon={<SendIcon />}
-                        onClick={uploadArquivoCliente}
-                        disabled={uploading}
-                      >
-                        Enviar
-                      </Button>
+                      </div>
                     </div>
                   </Box>
 
